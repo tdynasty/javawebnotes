@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+
+<struts>
+    <!--  Overwrite Convention -->
+    <constant name="struts.i18n.enconding" value="GBK"></constant>
+    <include file="struts-admin.xml"/>
+    <include file="struts-customer.xml"/>
+    <include file="struts-session.xml"/>
+    <include file="struts-result.xml"/>
+    <include file="struts-interceptor.xml"/>
+    <include file="struts-resultB.xml"/>
+    <include file="struts-TagForm.xml"/>
+</struts>

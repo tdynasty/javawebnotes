@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+
+<struts>
+    <!--  Overwrite Convention -->
+    <package name="result" extends="struts-default" namespace="/">
+     <action name="loginPojo" class="pojo.LoginPojo" method="execute">
+    	<result>/loginPojoResult.jsp</result>
+     		<result name="input">/loginPojo.jsp</result>
+     </action>
+    </package>
+</struts>
