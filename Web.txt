@@ -1,0 +1,585 @@
+在Servlet中下载：
+		String realPath=this.getServletContext().getRealPath("/Download/哇塞的.jpg");//获取文件的真实路径
+		String filename=realPath.substring(realPath.lastIndexOf("//")+1);//获取文件名 文件名是/后的第一个名
+		response.setHeader("content-disposition", "attachment;filename="+URLEncoder.encode(filename));//用HTTP协议的 文件下载头"content-disposition", "attachment;如果是中文文件名需要同一编译码
+		FileInputStream in =new FileInputStream(realPath);//获取文件的流 把文件放入字节流中的写入流中。字节流可以处理任何类型的数据，字符流只能处理字符数据
+		/*模本代码 把文件拿出来 放到输出流中 在从输出流中拿出来放到浏览器中
+			int len=0;
+			byte buffer[]=new byte[1024];//buffer缓存
+			OutputStream out=response.getOutputStream();
+			while((len=in.read(buffer))>0){
+			out.write(buffer,0,len);
+			}
+		*/
+		in.close();
+在Servlet中生成验证码：
+		//1.在内存中创建一个图片
+		BufferedImage image=new BufferedImage(40, 80, BufferedImage.TYPE_INT_RGB);//宽，高，图片类型
+		//2.得到图片
+		Graphics g=image.getGraphics();
+		//3.向图片上写数据
+		g.setColor(Color.blue);
+		g.setFont(new Font(null,Font.BOLD,20));//null使用的是缺省字体
+		g.drawString("1234", 0,40);//从0写到40
+		//4.将图片写给浏览器
+		ImageIO.write(image, "jpg", response.getOutputStream());
+		//5.通知浏览器以图片方式打开
+		response.setHeader("content_type", "image/jpeg");
+在Servlet中生成随机验证码：
+		//1.在内存中创建一个图片
+		BufferedImage image=new BufferedImage(80, 20, BufferedImage.TYPE_INT_RGB);
+		//2.得到图片
+		Graphics g=image.getGraphics();
+		//3.向图片上写数据
+		g.setColor(Color.blue);
+		g.setFont(new Font(null,Font.BOLD,20));
+		g.drawString(numbernext(), 0,20);//写入一个方法 用来生成写给页面的随机数
+		//4.将图片写给浏览器
+		ImageIO.write(image, "jpg", response.getOutputStream());
+		//5.通知浏览器以图片方式打开
+		response.setHeader("content_type", "image/jpeg");
+	}
+
+	private String numbernext() {
+		Random r=new Random();//随机生成器
+		String num=r.nextInt(9999999)+"";随机生成0—9999999整数数字 在变成字符串
+		StringBuffer sb=new StringBuffer();
+		for(int i=0;7-num.length()<0;i++){
+			sb.append("0");加入0
+		}
+		return sb.toString()+num;//连接成一个七位数的字符串
+/*
+    1、StringBuffer对象的初始化
+StringBuffer对象的初始化不像String类的初始化一样，Java提供的有特殊的语法，而通常情况下一般使用构造方法进行初始化。
+例如：
+         StringBuffer s = new StringBuffer();
+这样初始化出的StringBuffer对象是一个空的对象。
+如果需要创建带有内容的StringBuffer对象，则可以使用：
+         StringBuffer s = new StringBuffer(“abc”);
+这样初始化出的StringBuffer对象的内容就是字符串”abc”。
+需要注意的是，StringBuffer和String属于不同的类型，也不能直接进行强制类型转换，下面的代码都是错误的：
+         StringBuffer s = “abc”;               //赋值类型不匹配
+         StringBuffer s = (StringBuffer)”abc”;    //不存在继承关系，无法进行强转
+StringBuffer对象和String对象之间的互转的代码如下：
+         String s = “abc”;
+         StringBuffer sb1 = new StringBuffer(“123”);
+         StringBuffer sb2 = new StringBuffer(s);   //String转换为StringBuffer
+         String s1 = sb1.toString();              //StringBuffer转换为String
+         2、StringBuffer的常用方法
+StringBuffer类中的方法主要偏重于对于字符串的变化，例如追加、插入和删除等，这个也是StringBuffer和String类的主要区别。
+a、append方法
+         public StringBuffer append(boolean b)
+该方法的作用是追加内容到当前StringBuffer对象的末尾，类似于字符串的连接。调用该方法以后，StringBuffer对象的内容也发生改变，例如：
+                  StringBuffer sb = new StringBuffer(“abc”);
+                   sb.append(true);
+         则对象sb的值将变成”abctrue”。
+使用该方法进行字符串的连接，将比String更加节约内容，例如应用于数据库SQL语句的连接，例如：
+                   StringBuffer sb = new StringBuffer();
+                   String user = “test”;
+                   String pwd = “123”;
+                   sb.append(“select * from userInfo where username=“)
+                    .append(user)
+                    .append(“ and pwd=”)
+                    .append(pwd);
+         这样对象sb的值就是字符串“select * from userInfo where username=test and pwd=123”。
+b、deleteCharAt方法
+         public StringBuffer deleteCharAt(int index)
+该方法的作用是删除指定位置的字符，然后将剩余的内容形成新的字符串。例如：
+         StringBuffer sb = new StringBuffer(“Test”);
+         sb. deleteCharAt(1);
+该代码的作用删除字符串对象sb中索引值为1的字符，也就是删除第二个字符，剩余的内容组成一个新的字符串。所以对象sb的值变为”Tst”。
+还存在一个功能类似的delete方法：
+         public StringBuffer delete(int start,int end)
+该方法的作用是删除指定区间以内的所有字符，包含start，不包含end索引值的区间。例如：
+         StringBuffer sb = new StringBuffer(“TestString”);
+         sb. delete (1,4);
+该代码的作用是删除索引值1(包括)到索引值4(不包括)之间的所有字符，剩余的字符形成新的字符串。则对象sb的值是”TString”。
+                   c、insert方法
+                            public StringBuffer insert(int offset, boolean b)
+                            该方法的作用是在StringBuffer对象中插入内容，然后形成新的字符串。例如：
+                                     StringBuffer sb = new StringBuffer(“TestString”);
+                                     sb.insert(4,false);
+该示例代码的作用是在对象sb的索引值4的位置插入false值，形成新的字符串，则执行以后对象sb的值是”TestfalseString”。
+                   d、reverse方法
+                            public StringBuffer reverse()
+该方法的作用是将StringBuffer对象中的内容反转，然后形成新的字符串。例如：
+         StringBuffer sb = new StringBuffer(“abc”);
+         sb.reverse();
+经过反转以后，对象sb中的内容将变为”cba”。
+                   e、setCharAt方法
+                            public void setCharAt(int index, char ch)
+                            该方法的作用是修改对象中索引值为index位置的字符为新的字符ch。例如：
+                                     StringBuffer sb = new StringBuffer(“abc”);
+                                     sb.setCharAt(1,’D’);
+                            则对象sb的值将变成”aDc”。
+                   f、trimToSize方法
+                            public void trimToSize()
+*/
+
+在MyEclipse中改工程名后需要在属性里更改Web中工程的名字
+
+在HttpServlet中响应头：
+设置头不让浏览器缓存图片数据:三种方法
+response.setHeader("Expirse","-1");
+response.setHeader("Cache-Control","no-cache");
+response.setHeader("Pragma","no-cache");
+设置浏览器定时刷新：
+response.setHeader("refresh","2");
+
+
+在请求转发中request.getRequestDispatcher("").forward(request,response);服务器行为，即用户向服务器发送了一次http请求，该请求可能会经过多个信息资源处理以后菜返回给用户，各个信息资源使用请求转发机制互相转发请求，但是用户是感觉不到请求转发的。通过request.getRequestDispatcher(path).forward(arg0, arg1)实现，是一次请求，转发后对象会保存，地址栏的url不会改变。
+在重定向中response.sendRedirect("");客户端行为。一般用于避免用户的非正常访问。例如：用户在没用登录的情况下访问后台资源，servlet可以将该http请求重定向到登录页面，让用户登陆后再访问。通过调用response.sendRedirect(arg0)实现，从本质上讲等同于两次请求，前一次的请求对象不会保存，地址栏的url会改变。
+
+在写地址路径时一律使用斜杠开头/
+在使用硬盘上资源时使用\\斜杠，在使用Web程序的url资源时使用/斜杠
+在给服务器使用"/"时是给服务器用的，则代表Web工程，在给浏览器用"/"时，代表webapps中的文件
+
+
+
+在同一次请求中不能同时调用response.getOutputStream();和response.getWriter();这两个方法相互冲突。
+
+
+
+request中的方法：
+System.out.printf(request.getRequestURL());//得到请求的url地址
+System.out.printf(request.getRequestURI());//得到请求的资源
+System.out.printf(request.getQueryString());//http://localhost:8080/工程名/Servlet名?name=ws   输出name=ws
+System.out.printf(request.getRemoteAddr());//得到来访者的IP
+System.out.printf(request.getRemoteHost());//得到本机地址
+System.out.printf(request.getMethod());//得到浏览器向服务器发送请求时 响应的哪个方法 一般是GET方法
+
+
+获取数组数据：这样的方式可以避免有空值带来的异常
+String likes[]=request.getParameterValues("like");
+for(int i=0;likes!=null && i<likes.length();i++){
+	System.out.printf(likes[i]);
+}
+
+根据名称获取值：
+Enumeration u=request.getParmeterNames();
+while(u.hasMoreElements()){
+	string name=(String) u.nextElement();
+	String value=request.getParmeter();
+	System.out.printf(name+"="+value);
+}
+
+
+每个form称为表单 表单里的每一项称为输入项
+<form>
+ <input type=""></input>
+</form>
+
+
+
+中文编码问题：
+从浏览器获取的值：request.setCharacterEncoding("");
+从服务器传值打浏览器：response.setCharacterEncoding("");response.setContentType("text/html;charset=");
+如果表单用get提交方式request设置中文编码无效
+
+如果用get提交方式，在Servlet中设置中文：
+byte source[] = username.getBytes("iso8859-1");得到客户机提交的原始数据
+usname = new String(source,"UTF-8");
+//优化代码：
+usname=new String(usname.getBytes("iso8859-1"),"UTF-8");
+
+如果是超链接带的数据，肯定是get方式提交，就需要给request response方式设置中文编码：
+<a href="/ServletDemo?name=WS">ss</a>
+
+
+
+
+
+
+request也可以实现请求转发：
+RequestDispatcher rd=request.getRequestDispatcher("/");
+rd.forward(request,response);
+
+request.getRequestDispatcher("/").forward(request,response);
+
+
+在进行请求转发时携带数据：把数据set放到request中，然后在从request中get得到数据
+request.setAttribute("名字",data);
+request.getAttribute("名字");
+
+
+如果在Servlet中利用到一些公共资源可以用到:只需要更改调用到的Servlet就可以
+request.getRequestDispatcher("/").include(request,response);
+
+
+
+
+一个Cookie只能标识一种信息，它至少含有一个标识该信息的名称（NAME）和设置值（VALUE）。 
+一个WEB站点可以给一个WEB浏览器发送多个Cookie，一个WEB浏览器也可以存储多个WEB站点提供的Cookie。
+浏览器一般只允许存放300个Cookie，每个站点最多存放20个Cookie，每个Cookie的大小限制为4KB。
+如果创建了一个cookie，并将他发送到浏览器，默认情况下它是一个会话级别的cookie（即存储在浏览器的内存中），用户退出浏览器之后即被删除。若希望浏览器将该cookie存储在磁盘上，则需要使用maxAge，并给出一个以秒为单位的时间。将最大时效设为0则是命令浏览器删除该cookie。
+注意，删除cookie时，path必须一致，否则不会删除
+
+
+利用Cookie实现在页面中显示用户上一次登陆时间：
+out.write("上次访问的时间:");
+		//得到浏览器的Cookie
+		Cookie cookies[]=request.getCookies();
+		//主要筛选第一次进入时没有进入日期
+		//第二次访问时执行
+		for(int i=0;cookies!=null && i<cookies.length;i++){
+			Cookie cookie=cookies[i];
+			//得到Cookie名为lastAccessTime的Cookie
+			if(cookie.getName().equals("lastAccessTime")){
+				//在javaAPI中时间Date需要的时long属性的值 首先登陆时间是int值 getValue()是得到string类型的值
+				Long time=Long.parseLong(cookie.getValue());
+				Date d=new Date(time);
+				//把得到的Time值换成当地时间的表达方式
+				out.write(d.toLocaleString());
+			}
+		}
+		//第一次访问时执行
+		//当系统登陆这个Servlet时，先获取系统的当前时间作为登陆的时间并且命名为lastAccessTime
+				Cookie cookie=new Cookie("lastAccessTime", System.currentTimeMillis()+"");
+				cookie.setMaxAge(60);
+				//设置cookie的生存时间
+				//在网站进行维护时需要删除客户的cookie，删除cookie时需要路径是一致的 也就是在同一个项目里
+				//cookie.setPath("/项目名");
+				//cookie.setMaxAge(0);
+				response.addCookie(cookie);
+
+
+在Session中：
+如果在同一窗口打开的界面用的是同一个Session 可以实现数据共享
+登陆才能查看的网页：
+User user=(User) request.getSession().getAttribute("user");
+if(user==null){不允许登陆}
+
+
+
+JSP
+Page指令：page指令用于定义JSP页面的各种属性，无论page指令出现在页面中的什么位置，作用的都是整个JSP页面。
+
+在JSP页面中出错后，跳转界面：在<%@page中加入 errorPage="/jsp的地址"%>
+
+全局设置：在web.xml中添加标签
+<error-page>
+<exception-type>出错的信息，例如java.lang.ArithmeticException</exception-type>
+<location>跳转的jsp界面，例如/errors.jsp</location>
+</error-page>
+
+<error-page>
+<exception-type>出错代号，例如404</exception-type>
+<location>跳转的jsp界面，在开发中经常把错误页面放到文件夹中，例如/errors/404.jsp</location>
+</error-page>
+
+全局设置之后 无论在哪个JSP界面出现当前错误信息都会跳转到这个jsp页面，需要设置浏览器：友好http错误信息 如果错误页面数据超过1024字节就可以不用设置
+
+jsp中的errorPage属性优先级高于web.xml：如果设置了某个JSP页面的errorPage属性，那么在web.xml文件中设置的错误处理将不对该页面起作用。
+
+JSP中九大隐式对象，一般页面只有八大隐式对象，只有在<%@Page%>中设置isErrorPage才把except给到界面中。
+一般在错误页面中<%@Page%>中设置isErrorPage，然后在里面写<%exception.getCause()%>才得到错误信息
+
+在JSP中的<include>标签：
+<%@include file="页面.jsp"%>
+浏览器会把引入的jsp页面与当前jsp页面合成新的jsp页面 和新的servlet 被引入的jsp页面需要删除<html><head><body>等的架构标签，形成良好的html页面
+
+JSP九大隐式对象：Request Response Session Application Config Out Page pageContext Exception
+
+
+jsp中标签：
+<jsp:include page="/">动态合并页面
+<jsp:forword page="/">跳转
+<jsp:param name="" value=""/>在使用上面两个标签时可以嵌套这个标签，传值
+获得值时用request。getParameter("name");
+
+
+
+在JSP页面中对javaBean进行操作：
+这些标签的生存周期只在当前jsp页面有效
+
+<jsp:useBean id="name 用于在调用javaBean 在域中存储时需要用的名" class="完整路径，包名+javaBean名" scope="域的名 page"/>标签体在第一次实例化时执行
+例如：<jsp:useBean id="name 用于在调用javaBean 在域中存储时需要用的名" class="完整路径，包名+javaBean名" scope="域的名 page">//实例化javaBean
+xxxx
+</jsp:useBean>
+
+//jsp:setProperty标签在工作时，它会自动把字符串转化成八种基本数据类型，对于复杂性数据类型无法转换
+
+<jsp:setProperty name="用于指定JavaBean对象的名称" property="javaBean中字段的名称" value="赋值给字段的值"/>
+
+
+<jsp:getProperty property="Bean中的字段名" name="用于指定JavaBean对象的名称"/>//取得字段中的值 如果没有值则会获得null
+
+
+四舍五入：
+new BigDecimal(值).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+
+
+
+Web开发规范在day09/02 包名的规范 jsp的规范 
+
+
+
+
+
+EL表达式：
+例如：
+request.setAttribute("name","aaa");
+${name}//这样是从四个域中取得值 四个域为：page request session application  默认为page域
+
+例如：
+Persion persion = new Persion();
+Address address = new Address();
+persion.setAddress(address);//在Persion()Bean中创建一个private Address address;然后在给address创建Get Set方法，在创建一个Address()Bean,Address()中封装字段
+${person.address.name}//EL表达式从bean中获取值
+
+模拟情景：获取ArrayList集合中的数据
+<%
+Person p1=new Person();
+p.setName("aaa");
+Person p2=new Person();
+p2.setName("bbb")
+List list = new ArrayList();
+list.add(p1);
+list.add(p2);
+request.setAttribute("list",list);
+%>
+方法：${list[0].name}
+迭代取值：
+<c:forEach var=persion items="${list}">
+${persion.name}
+</c:forEach>
+
+模拟情景：获取Map集合中指定位置的数据
+<%
+Map map=new HashMap();
+map.put("a","aaa");
+map.put("b","bbb");
+map.put("c","ccc");
+map.put("1","111");
+request.setAttribute("map",map);
+%>
+${map.a}//在map取得关键字就可以
+${map["1"]}//如果关键字是数字 可以以这种形式
+
+
+EL表达式在获取工程路径时：${pageContext.request.contextPath}//如果在工程部署在服务器上后 更改此工程名称，这样可以不用更改 直接获取：/工程名 一般应用于跳转的<a href="${pageContext.request.contextPath}">中
+
+
+EL表达式运算符：
+empty:
+例如：
+<c:if test="${!empty{list}}">
+<c:forEach var="str" items=${list}>
+${str}
+</c:forEach>
+</c:if>
+<c:if test="${empty{list}}">
+<c:forEach var="str" items=${list}>
+对不起，没有数据
+</c:forEach>
+</c:if>
+
+二元表达式：
+${user==null?"对不起没有登陆":"您已登陆"}判断user是否为空，如果为空就执行第一个 如果不为空就执行第二个
+例如：数据回显
+<input type="radio" name="gender" value="male" ${user.gender=='male'?'checked':''}>男
+<input type="radio" name="gender" value="female" ${user.gender=='female'?'checked':''}>女
+
+${pageContext.}可以拿到pageContext对象中的request\response\contextServlet对象
+
+从指定域中查找name数据：
+从page域中查找数据
+pageContext.setAttribute("name","aaa");实际上是把数据存放到map集合当中
+${pageScope.name}
+
+从request域中取数据：
+request.setAttribute("name","bbb")
+${request.Scope.name}
+重点：如果还是${name}那么取到的是aaa 因为他首先从pageContext中取值
+
+重点：验证用户是否已经登陆时需要用${sessionScope.user==null}因为有可能在request域中也有user
+
+
+应用场景：登陆失败的话跳回原来界面 然后把输入数据保存在界面中
+${param.name}用于获得请求参数的map，并从map中获取数据
+${paramValues.数组名[0]}
+${paramValues.数组名[1]}用来获取数组型数据
+获取请求头的值：
+${header.头的名}如果不行就用${header[头名]}
+
+在web.xml文件中设置
+<param-name>root</>
+<param-value>工程名</>
+
+然后在界面中直接获取工程名：
+${initParm.root}
+
+
+
+
+
+
+jstl：导包jstl.jar 和standard.jar放到lib文件夹下 ，在使用jstl时需要在jsp中导包，<%@taglib url="http://java.sun.com/jsp/jstl/core" prefix="c"%>url为地址，prefix是用标签时的自定义名
+
+
+
+使用jstl+el表达式可以迭代list集合：把list集合中所有的值都输出出来
+<c:forEach var="person" items="${list}">//c:是自定义标签，需要导包，var定义一个变量 items指定迭代的集合
+${person.name}
+</c:forEach>
+
+
+迭代map里面的数据：首先会初始化 Set<map.Entry> set = map.entrySet();map.entrySet()中有getKey和getValue方法 所以迭代的是map.entrySet()方法返回的Set集合
+<c:forEach var="a" item="${map}">
+${map.key} = ${map.value}
+</c:forEach>
+
+
+如果登陆成功 登陆者会放到Session中 所以el表达式就能获得session域中的数据
+<c:if test="${user!=null}">
+欢迎登陆
+</c:if>
+<c:if test="${user==null}">
+登录失败
+</c:if>
+
+
+
+
+
+
+HashMap 有很快的读取速度，在任一时刻可以有很多线程访问 当在遍历时数据是随机的 允许只能有一个键值为null，很多条value的值为空
+Hashtable 写速度慢，在任一时刻只能一个人进行写操作 他不允许键或者值为空
+LindedHashMap 是HashMap的子类，LinkedHashMap在Iterator遍历时按照的是先得到的是先插入的顺序遍历，在遍历过程中LinkedHashMap是根据数据量大小给定容量的 HashMap是很大的容量，所以在遍历时有可能LinkedHashMap的遍历速度快
+TreeMap 实现SortMap接口 如果用Iterator遍历 得到的数据是默认按升序排列后得到的
+
+
+
+
+
+
+
+
+自定义标签：
+
+<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@taglib uri="/itcast" prefix="itcast" %>
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>输出客户机的IP</title>
+  </head>
+  
+  <body>
+     您的IP是：<itcast:viewIP/>
+  </body>
+</html>
+
+自定义标签的扩展功能：
+控制jsp页面某一部分内容是否执行。
+1.编写一个类实现tag接口，控制dostarttag方法的返回值，如果这个方法返回EVAL_BODY_INCLUDE，则执行标签体，如果返回SKIP_BODY，则不执行标签体
+
+
+控制整个jsp页面是否执行。
+2、编写一个类实现tag接口，控制doendtag方法的返回值，如果这个方法返回EVAL_PAGE，则执行标签余下的jsp页面，如果返回SKIP_PAGE，则不执行余下的jsp
+
+控制jsp页面内容重复执行。
+3.编写一个类实现Iterationtag接口，控制doAfterBody方法的返回值，如果这个方法返回EVAL_BODY_AGAIN， 则web服务器又执行一次标签体，依次类推，一直执行到doAfterBody方法返回SKIP_BODY，则标签体才不会重复执行。
+
+修改jsp页面内容输出。
+4、编写一个类实现BodyTag接口，控制doStartTag方法，返回EVAL_BODY_BUFFERED，则web服务器会创建BodyContent对象捕获标签体，开发人员在doendtag方法体内，得到代表标签体的bodyContent对象，从而就可以对标签体进行修改。。。。。。操作。
+
+
+简单标签实现页面逻辑
+
+控制jsp页面某一部分内容是否执行。
+1.在dotag方法里面不调用jspFrament.invoke方法即可
+
+控制jsp页面内容重复执行。
+1.在dotag方法重复调用jspFrament.invoke方法即可
+
+修改jsp页面内容输出
+1.在dotag方法调用jspFrament.invoke方法时，让执行结果写一个自定义的缓冲中即可，然后开发人员可以取出缓冲的数据修改输 出
+
+控制整个jsp页面是否执行。
+1.在dotag方法抛SKIPPageException即可，jsp收到这个异常，将忽略标签余下jsp页面的执行
+
+
+
+生成exe
+1、要把工程做成一个可运行的 jar
+	Main-Class: org.apache.catalina.startup.Bootstrap
+2、使用exe4j
+
+
+
+防盗链：
+在jsp界面：
+<s:referer site="地址" page=""/>如果不是从page界面跳的本页面，那么会跳page页面
+在创建一个简单标签 集成SimpleTagSupport：
+1、创建String site和page然后封装字段
+2、重写doTag()方法
+3、
+PageContext pageContext=()this.getJspContext();
+HttpServletRequest request=()pageContext.getRequest();
+String referer=request.getHerder("referer");
+4、判断
+if(referer==null||!referer.startsWith(site)){
+	HttpServletResponse respnse=()pageContext.getResponse();
+	String webroot=request.getContextPath();
+	response.sendRedirect("主界面地址");
+}
+5、在TID文件中配置标签：
+<tag>
+        <name>referer</name>  <!-- 为标签处理器类配一个标签名 -->
+		<tag-class>cn.itcast.web.tag.RefererTag</tag-class>
+		<body-content>empty</body-content>
+			
+		<attribute>
+			<name>site</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		
+		<attribute>
+			<name>page</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		
+    </tag>
+
+自定义标签if--else效果选择：
+<c:choose>
+<c:when test="">
+
+<c:when>
+<c:otherwise>
+
+</c:otherwise>
+</c:choose>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
